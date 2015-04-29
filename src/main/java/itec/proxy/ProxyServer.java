@@ -19,6 +19,13 @@ public class ProxyServer {
             //ignore me
         }
 
+        String resolverUrl = "localhost";
+        try {
+            resolverUrl = args[1];
+        } catch (Exception e) {
+
+        }
+
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Started on: " + port);
@@ -28,7 +35,7 @@ public class ProxyServer {
         }
 
         while (listening) {
-            new ProxyThread(serverSocket.accept()).start();
+            new ProxyThread(serverSocket.accept(), resolverUrl).start();
         }
         serverSocket.close();
     }

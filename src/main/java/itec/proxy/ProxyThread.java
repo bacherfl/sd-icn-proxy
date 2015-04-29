@@ -1,7 +1,6 @@
 package itec.proxy;
 
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import model.LocationInfo;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -9,15 +8,16 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
 import java.util.StringTokenizer;
 
 public class ProxyThread extends Thread {
     private Socket socket = null;
+    private String resolverUrl;
     private static final int BUFFER_SIZE = 32768;
-    public ProxyThread(Socket socket) {
+    public ProxyThread(Socket socket, String resolverUrl) {
         super("ProxyThread");
         this.socket = socket;
+        this.resolverUrl = resolverUrl;
     }
 
     public void run() {
@@ -61,18 +61,22 @@ public class ProxyThread extends Thread {
             BufferedReader rd = null;
             try {
                 RestTemplate restTemplate = new RestTemplate();
-                MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-                map.add("contentName", urlToCall);
 
-                List<String> contentLocations =
-                        restTemplate.getForObject("http://10.0.2.2:8080/location/resolve", List.class, map);
+                LocationInfo contentLocations =
+                        restTemplate.getForObject("http://" + resolverUrl + ":6666/location/resolve?contentName=" + urlToCall, LocationInfo.class);
+
+                if (contentLocations.getLocations().size() == 0) {
+                    return;
+                }
+
+                String newUrl = "http://" + contentLocations.getLocations().get(0) + ":9000/media" + urlToCall;
 
                 //System.out.println("sending request
                 //to real server for url: "
                 //        + urlToCall);
                 ///////////////////////////////////
                 //begin send request to server, get response from server
-                URL url = new URL(urlToCall);
+                URL url = new URL(newUrl);
                 URLConnection conn = url.openConnection();
                 conn.setDoInput(true);
                 //not doing HTTP posts
