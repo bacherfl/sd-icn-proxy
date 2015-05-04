@@ -1,6 +1,10 @@
 package itec.proxy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import model.LocationInfo;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -62,22 +66,38 @@ public class ProxyThread extends Thread {
             try {
                 RestTemplate restTemplate = new RestTemplate();
 
-                LocationInfo contentLocations =
-                        restTemplate.getForObject("http://" + resolverUrl + ":6666/location/resolve?contentName=" + urlToCall, LocationInfo.class);
+                String contentLocations =
+                        restTemplate.getForObject("http://" + resolverUrl + ":6666/location/resolve?contentName=" + urlToCall, String.class);
 
-                if (contentLocations.getLocations().size() == 0) {
+
+                System.out.println(contentLocations);
+                /*
+                JSONObject jsonLocations = (JSONObject)JSONValue.parse(contentLocations);
+                JSONArray locations = (JSONArray) jsonLocations.get("locations");
+
+                System.out.println("1");
+                if (locations.size() == 0) {
                     return;
                 }
+                */
+                System.out.println("2");
 
-                String newUrl = "http://" + contentLocations.getLocations().get(0) + ":9000/media" + urlToCall;
+                System.out.println(contentLocations);
+                ObjectMapper mapper = new ObjectMapper();
+                LocationInfo locationInfo = mapper.readValue(contentLocations, LocationInfo.class);
 
-                //System.out.println("sending request
-                //to real server for url: "
-                //        + urlToCall);
+                if (locationInfo.getLocations().size() == 0) {
+                    return;
+                }
+                System.out.println("3");
+                String newUrl = "http://" + locationInfo.getLocations().get(0) + ":9000/media" + urlToCall;
+                System.out.println("sending request to real server for url: " + newUrl);
                 ///////////////////////////////////
+
                 //begin send request to server, get response from server
                 URL url = new URL(newUrl);
                 URLConnection conn = url.openConnection();
+                System.out.println("4");
                 conn.setDoInput(true);
                 //not doing HTTP posts
                 conn.setDoOutput(false);
@@ -95,6 +115,7 @@ public class ProxyThread extends Thread {
                 // Get the response
                 InputStream is = null;
                 HttpURLConnection huc = (HttpURLConnection)conn;
+                System.out.println("5");
                 if (conn.getContentLength() > 0) {
                     try {
                         is = conn.getInputStream();
@@ -104,6 +125,7 @@ public class ProxyThread extends Thread {
                                 "********* IO EXCEPTION **********: " + ioe);
                     }
                 }
+                System.out.println("6");
                 //end send request to server, get response from server
                 ///////////////////////////////////
 
@@ -111,8 +133,10 @@ public class ProxyThread extends Thread {
                 //begin send response to client
                 byte by[] = new byte[ BUFFER_SIZE ];
                 int index = is.read( by, 0, BUFFER_SIZE );
+                System.out.println("7");
                 while ( index != -1 )
                 {
+                    System.out.println("received " + by[0]);
                     out.write( by, 0, index );
                     index = is.read( by, 0, BUFFER_SIZE );
                 }
