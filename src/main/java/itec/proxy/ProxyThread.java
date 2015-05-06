@@ -71,16 +71,6 @@ public class ProxyThread extends Thread {
 
 
                 System.out.println(contentLocations);
-                /*
-                JSONObject jsonLocations = (JSONObject)JSONValue.parse(contentLocations);
-                JSONArray locations = (JSONArray) jsonLocations.get("locations");
-
-                System.out.println("1");
-                if (locations.size() == 0) {
-                    return;
-                }
-                */
-                System.out.println("2");
 
                 System.out.println(contentLocations);
                 ObjectMapper mapper = new ObjectMapper();
@@ -89,7 +79,7 @@ public class ProxyThread extends Thread {
                 if (locationInfo.getLocations().size() == 0) {
                     return;
                 }
-                System.out.println("3");
+
                 String newUrl = "http://" + locationInfo.getLocations().get(0) + "/media" + urlToCall;
                 System.out.println("sending request to real server for url: " + newUrl);
                 ///////////////////////////////////
@@ -97,7 +87,6 @@ public class ProxyThread extends Thread {
                 //begin send request to server, get response from server
                 URL url = new URL(newUrl);
                 URLConnection conn = url.openConnection();
-                System.out.println("4");
                 conn.setDoInput(true);
                 //not doing HTTP posts
                 conn.setDoOutput(false);
@@ -115,7 +104,7 @@ public class ProxyThread extends Thread {
                 // Get the response
                 InputStream is = null;
                 HttpURLConnection huc = (HttpURLConnection)conn;
-                System.out.println("5");
+
                 if (conn.getContentLength() > 0) {
                     try {
                         is = conn.getInputStream();
@@ -125,7 +114,7 @@ public class ProxyThread extends Thread {
                                 "********* IO EXCEPTION **********: " + ioe);
                     }
                 }
-                System.out.println("6");
+
                 //end send request to server, get response from server
                 ///////////////////////////////////
 
@@ -133,7 +122,7 @@ public class ProxyThread extends Thread {
                 //begin send response to client
                 byte by[] = new byte[ BUFFER_SIZE ];
                 int index = is.read( by, 0, BUFFER_SIZE );
-                System.out.println("7");
+
                 while ( index != -1 )
                 {
                     System.out.println("received " + by[0]);
