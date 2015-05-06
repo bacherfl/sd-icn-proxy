@@ -11,7 +11,6 @@ public class LocationInfo {
     private List<String> locations;
 
     public LocationInfo() {
-        locations = new ArrayList<>();
     }
 
     public List<String> getLocations() {

@@ -90,7 +90,7 @@ public class ProxyThread extends Thread {
                     return;
                 }
                 System.out.println("3");
-                String newUrl = "http://" + locationInfo.getLocations().get(0) + ":9000/media" + urlToCall;
+                String newUrl = "http://" + locationInfo.getLocations().get(0) + "/media" + urlToCall;
                 System.out.println("sending request to real server for url: " + newUrl);
                 ///////////////////////////////////
 
